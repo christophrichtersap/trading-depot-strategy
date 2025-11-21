@@ -4,7 +4,7 @@
 
 **Realistic backtesting framework for leveraged ETF strategies with full tax and cost modeling based on German tax law.**
 
-![Strategy Comparison](examples/latest.png)
+![Strategy Comparison](examples/Nasdaq_100.png)
 
 ## 🎯 Features
 
