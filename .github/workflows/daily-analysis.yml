@@ -1,0 +1,84 @@
+name: Daily Strategy Analysis
+
+on:
+  schedule:
+    # Run every day at 6 AM UTC (after market close)
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  generate-charts:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        index: ['1', '2', '3', '4', '5']
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install yfinance pandas numpy matplotlib
+          
+      - name: Run optimization for index ${{ matrix.index }}
+        env:
+          INDEX_CHOICE: ${{ matrix.index }}
+        run: |
+          python main.py
+          
+      - name: Get index name
+        id: index_name
+        run: |
+          case ${{ matrix.index }} in
+            1) echo "name=nasdaq100" >> $GITHUB_OUTPUT ;;
+            2) echo "name=sp500" >> $GITHUB_OUTPUT ;;
+            3) echo "name=dax40" >> $GITHUB_OUTPUT ;;
+            4) echo "name=csi300" >> $GITHUB_OUTPUT ;;
+            5) echo "name=msci_world" >> $GITHUB_OUTPUT ;;
+          esac
+          
+      - name: Rename chart
+        run: |
+          mv examples/latest.png examples/${{ steps.index_name.outputs.name }}_$(date +%Y%m%d).png
+          cp examples/${{ steps.index_name.outputs.name }}_$(date +%Y%m%d).png examples/${{ steps.index_name.outputs.name }}_latest.png
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-${{ steps.index_name.outputs.name }}
+          path: examples/*.png
+          retention-days: 90
+          
+  commit-results:
+    needs: generate-charts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: examples/
+          
+      - name: Flatten artifacts
+        run: |
+          mkdir -p examples_flat
+          find examples/ -name "*.png" -exec mv {} examples_flat/ \;
+          rm -rf examples
+          mv examples_flat examples
+          
+      - name: Commit and push
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add examples/*.png
+          git diff --staged --quiet || git commit -m "📊 Daily analysis update - $(date +%Y-%m-%d)"
+          git push
