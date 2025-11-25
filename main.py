@@ -21,7 +21,10 @@ INDEX_MAP = {
     "2": {"Ticker": "^GSPC",    "Name": "S&P 500",      "Currency": "$"},
     "3": {"Ticker": "^GDAXI",   "Name": "DAX 40",       "Currency": "€"},
     "4": {"Ticker": "000300.SS","Name": "CSI 300",      "Currency": "¥"},
-    "5": {"Ticker": "URTH",     "Name": "MSCI World",   "Currency": "$"}
+    "5": {"Ticker": "URTH",     "Name": "MSCI World",   "Currency": "$"},
+    "6": {"Ticker": "^STOXX50E", "Name": "EuroStoxx 50",  "Currency": "€"}
+    
+    
 }
 
 # FINANCIAL SETTINGS (GERMANY / REALISTIC)
