@@ -2,9 +2,8 @@ name: Daily Strategy Analysis
 
 on:
   schedule:
-    # Run every day at 6 AM UTC (after market close)
     - cron: '0 6 * * *'
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:
 
 jobs:
   generate-charts:
@@ -32,13 +31,28 @@ jobs:
           CI: true
         run: |
           python main.py
-          
+
+      # ---------------------------------------------------------
+      # NEW STEP: Rename files to prevent overwriting later
+      # ---------------------------------------------------------
+      - name: Rename output files with Index ID
+        run: |
+          cd examples
+          for file in *; do
+            if [[ -f "$file" ]]; then
+              filename="${file%.*}"
+              extension="${file##*.}"
+              mv "$file" "${filename}_index_${{ matrix.index }}.${extension}"
+            fi
+          done
+          ls -la  # Verify the rename worked
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: results-index-${{ matrix.index }}
           path: examples/
-          retention-days: 90
+          retention-days: 1
           
   commit-results:
     needs: generate-charts
@@ -60,14 +74,20 @@ jobs:
       - name: Organize results
         run: |
           mkdir -p examples
-          # Move all PNG and MD files from artifacts to examples
+          # Because files were renamed in the previous job, 
+          # they are now unique (e.g., chart_index_1.png, chart_index_2.png)
+          # We can safely flatten the directory structure.
           find artifacts/ -type f \( -name "*.png" -o -name "*.md" \) -exec cp {} examples/ \;
+          
+          echo "Files to be committed:"
           ls -la examples/
           
       - name: Commit and push
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add examples/*.png examples/*.md
+          git add examples/*
+          # Check if there are changes before committing to prevent errors
           git diff --staged --quiet || git commit -m "📊 Daily analysis update - $(date +%Y-%m-%d)"
+          git pull --rebase # Good practice to pull before push in case of concurrent commits
           git push
