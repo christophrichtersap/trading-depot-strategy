@@ -2,8 +2,9 @@ name: Daily Strategy Analysis
 
 on:
   schedule:
+    # Run every day at 6 AM UTC (after market close)
     - cron: '0 6 * * *'
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   generate-charts:
@@ -31,13 +32,13 @@ jobs:
           CI: true
         run: |
           python main.py
+          
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: results-${{ matrix.index }}
-          # Upload only the files we just renamed
-          path: examples/*_${{ matrix.index }}.*
-          retention-days: 1
+          name: results-index-${{ matrix.index }}
+          path: examples/
+          retention-days: 90
           
   commit-results:
     needs: generate-charts
@@ -51,26 +52,22 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         
-      # ------------------------------------------------------------------
-      # MERGE STEP
-      # Downloads results-1, results-2, etc. all into the 'examples' folder.
-      # Since we renamed them above, they will sit side-by-side.
-      # ------------------------------------------------------------------
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: results-*
-          path: examples/
-          merge-multiple: true
+          path: artifacts/
+          
+      - name: Organize results
+        run: |
+          mkdir -p examples
+          # Move all PNG and MD files from artifacts to examples
+          find artifacts/ -type f \( -name "*.png" -o -name "*.md" \) -exec cp {} examples/ \;
+          ls -la examples/
           
       - name: Commit and push
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          
-          git add examples/
-          
-          # Commit only if there are changes
+          git add examples/*.png examples/*.md
           git diff --staged --quiet || git commit -m "📊 Daily analysis update - $(date +%Y-%m-%d)"
-          git pull --rebase
           git push
