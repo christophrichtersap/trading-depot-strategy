@@ -2,9 +2,8 @@ name: Daily Strategy Analysis
 
 on:
   schedule:
-    # Run every day at 6 AM UTC (after market close)
     - cron: '0 6 * * *'
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:
 
 jobs:
   generate-charts:
@@ -25,6 +24,17 @@ jobs:
       - name: Install dependencies
         run: |
           pip install yfinance pandas numpy matplotlib
+
+      # -------------------------------------------------------------
+      # 1. CLEAN STEP
+      # Remove old images/reports so we don't accidentally rename
+      # old files or upload junk.
+      # -------------------------------------------------------------
+      - name: Clean examples folder
+        run: |
+          # The -f flag means "force" (no error if files don't exist)
+          rm -f examples/*.png examples/*.md
+          echo "Examples folder cleaned."
           
       - name: Run optimization for index ${{ matrix.index }}
         env:
@@ -32,13 +42,30 @@ jobs:
           CI: true
         run: |
           python main.py
-          
+
+      # -------------------------------------------------------------
+      # 2. RENAME STEP
+      # Since we cleaned the folder first, we know ANY file here
+      # was just created by Python. We can safely rename them all.
+      # -------------------------------------------------------------
+      - name: Rename output files
+        run: |
+          cd examples
+          for file in *.png *.md; do
+            if [[ -e "$file" ]]; then
+              filename="${file%.*}"
+              extension="${file##*.}"
+              # Result: strategy.png -> strategy_1.png
+              mv "$file" "${filename}_${{ matrix.index }}.${extension}"
+            fi
+          done
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: results-index-${{ matrix.index }}
+          name: results-${{ matrix.index }}
           path: examples/
-          retention-days: 90
+          retention-days: 1
           
   commit-results:
     needs: generate-charts
@@ -52,22 +79,26 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         
+      # -------------------------------------------------------------
+      # 3. MERGE STEP
+      # Downloads all results (1-5) into the 'examples' folder.
+      # -------------------------------------------------------------
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts/
-          
-      - name: Organize results
-        run: |
-          mkdir -p examples
-          # Move all PNG and MD files from artifacts to examples
-          find artifacts/ -type f \( -name "*.png" -o -name "*.md" \) -exec cp {} examples/ \;
-          ls -la examples/
+          pattern: results-*
+          path: examples/
+          merge-multiple: true
           
       - name: Commit and push
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add examples/*.png examples/*.md
+          
+          # Add the new files
+          git add examples/
+          
+          # Commit only if there are changes
           git diff --staged --quiet || git commit -m "📊 Daily analysis update - $(date +%Y-%m-%d)"
+          git pull --rebase
           git push
