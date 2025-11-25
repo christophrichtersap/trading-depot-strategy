@@ -2,8 +2,9 @@ name: Daily Strategy Analysis
 
 on:
   schedule:
+    # Run every day at 6 AM UTC (after market close)
     - cron: '0 6 * * *'
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   generate-charts:
@@ -79,16 +80,24 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         
+<<<<<<< HEAD
       # -------------------------------------------------------------
       # 3. MERGE STEP
       # Downloads all results (1-5) into the 'examples' folder.
       # -------------------------------------------------------------
+=======
+>>>>>>> 285bd35 (removed not required files)
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: results-*
-          path: examples/
-          merge-multiple: true
+          path: artifacts/
+          
+      - name: Organize results
+        run: |
+          mkdir -p examples
+          # Move all PNG and MD files from artifacts to examples
+          find artifacts/ -type f \( -name "*.png" -o -name "*.md" \) -exec cp {} examples/ \;
+          ls -la examples/
           
       - name: Commit and push
         run: |
