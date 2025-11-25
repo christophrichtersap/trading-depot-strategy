@@ -22,9 +22,8 @@ jobs:
         run: |
           pip install yfinance pandas numpy matplotlib
           
-      - name: Run optimization for index ${{ matrix.index }}
+      - name: Run optimization for indexes
         env:
-          TARGET_INDEX: ${{ matrix.index }}
           CI: true
         run: |
           for index in 1 2 3 4 5; do
@@ -35,7 +34,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: results-index-${{ matrix.index }}
+          name: results-index
           path: examples/
           retention-days: 90
           
