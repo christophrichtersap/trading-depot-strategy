@@ -8,11 +8,7 @@ on:
 
 jobs:
   generate-charts:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        index: ['1', '2', '3', '4', '5']
-      
+    runs-on: ubuntu-latest      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,7 +27,10 @@ jobs:
           TARGET_INDEX: ${{ matrix.index }}
           CI: true
         run: |
-          python main.py
+          for index in 1 2 3 4 5; do
+            export TARGET_INDEX=$index
+            python main.py
+          done
           
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -55,9 +54,7 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: results-index-*
           path: artifacts/
-          merge-multiple: true
           
       - name: Organize results
         run: |
