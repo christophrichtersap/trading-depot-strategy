@@ -32,26 +32,34 @@ jobs:
         run: |
           python main.py
 
-      # ---------------------------------------------------------
-      # NEW STEP: Rename files to prevent overwriting later
-      # ---------------------------------------------------------
-      - name: Rename output files with Index ID
+      # -----------------------------------------------------------
+      # SMART RENAME: Only rename files explicitly created/modified 
+      # by the python script. Ignores static files (logos, etc).
+      # -----------------------------------------------------------
+      - name: Rename Only Generated Files
         run: |
-          cd examples
-          for file in *; do
-            if [[ -f "$file" ]]; then
-              filename="${file%.*}"
-              extension="${file##*.}"
-              mv "$file" "${filename}_index_${{ matrix.index }}.${extension}"
-            fi
+          # Find files in 'examples/' that are Untracked (new) or Modified
+          # and rename ONLY them.
+          git ls-files --others --modified --exclude-standard examples/ | while read file; do
+            echo "Processing generated file: $file"
+            
+            # Split filename and extension
+            filename="${file%.*}"
+            extension="${file##*.}"
+            
+            # Rename from 'examples/chart.png' to 'examples/chart_1.png'
+            mv "$file" "${filename}_${{ matrix.index }}.${extension}"
           done
-          ls -la  # Verify the rename worked
 
+      # -----------------------------------------------------------
+      # SMART UPLOAD: Only upload the files we just renamed
+      # (Files ending in _1.png, _1.md, etc.)
+      # -----------------------------------------------------------
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: results-index-${{ matrix.index }}
-          path: examples/
+          name: results-${{ matrix.index }}
+          path: examples/*_${{ matrix.index }}.*
           retention-days: 1
           
   commit-results:
@@ -66,28 +74,26 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         
+      # -----------------------------------------------------------
+      # MERGE: Downloads the specific renamed files from all jobs
+      # into the single 'examples/' folder.
+      # -----------------------------------------------------------
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts/
-          
-      - name: Organize results
-        run: |
-          mkdir -p examples
-          # Because files were renamed in the previous job, 
-          # they are now unique (e.g., chart_index_1.png, chart_index_2.png)
-          # We can safely flatten the directory structure.
-          find artifacts/ -type f \( -name "*.png" -o -name "*.md" \) -exec cp {} examples/ \;
-          
-          echo "Files to be committed:"
-          ls -la examples/
+          pattern: results-*
+          path: examples/
+          merge-multiple: true
           
       - name: Commit and push
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add examples/*
-          # Check if there are changes before committing to prevent errors
+          
+          # Force add the new files
+          git add examples/
+          
+          # Commit only if there are changes
           git diff --staged --quiet || git commit -m "📊 Daily analysis update - $(date +%Y-%m-%d)"
-          git pull --rebase # Good practice to pull before push in case of concurrent commits
+          git pull --rebase
           git push
