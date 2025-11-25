@@ -26,7 +26,7 @@ jobs:
         env:
           CI: true
         run: |
-          for index in 1 2 3 4 5; do
+          for index in 1 2 3 4 5 6; do
             export TARGET_INDEX=$index
             python main.py
           done
