@@ -14,15 +14,13 @@ import shutil
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # ==========================================
-# 1. GLOBAL CONFIGURATION
-# ==========================================
 INDEX_MAP = {
-    "1": {"Ticker": "^NDX",     "Name": "Nasdaq 100",   "Currency": "$"},
-    "2": {"Ticker": "^GSPC",    "Name": "S&P 500",      "Currency": "$"},
+    "1": {"Ticker": "EUNL",     "Name": "Nasdaq 100",   "Currency": "$"},
+    "2": {"Ticker": "SXR8",    "Name": "S&P 500",      "Currency": "$"},
     "3": {"Ticker": "^GDAXI",   "Name": "DAX 40",       "Currency": "€"},
-    "4": {"Ticker": "000300.SS","Name": "CSI 300",      "Currency": "¥"},
-    "5": {"Ticker": "URTH",     "Name": "MSCI World",   "Currency": "$"},
-    "6": {"Ticker": "LVE.PA", "Name": "EuroStoxx 50",  "Currency": "€"}
+    "4": {"Ticker": "DBX0M2","Name": "CSI 300",      "Currency": "¥"},
+    "5": {"Ticker": "A0RPWH",     "Name": "MSCI World",   "Currency": "$"},
+    "6": {"Ticker": "EUE", "Name": "EuroStoxx 50",  "Currency": "€"}
     
     
 }
