@@ -31,35 +31,14 @@ jobs:
           CI: true
         run: |
           python main.py
-
-      # -----------------------------------------------------------
-      # SMART RENAME: Only rename files explicitly created/modified 
-      # by the python script. Ignores static files (logos, etc).
-      # -----------------------------------------------------------
-      - name: Rename Only Generated Files
-        run: |
-          # Find files in 'examples/' that are Untracked (new) or Modified
-          # and rename ONLY them.
-          git ls-files --others --modified --exclude-standard examples/ | while read file; do
-            echo "Processing generated file: $file"
-            
-            # Split filename and extension
-            filename="${file%.*}"
-            extension="${file##*.}"
-            
-            # Rename from 'examples/chart.png' to 'examples/chart_1.png'
-            mv "$file" "${filename}_${{ matrix.index }}.${extension}"
-          done
-
-      # -----------------------------------------------------------
-      # SMART UPLOAD: Only upload the files we just renamed
-      # (Files ending in _1.png, _1.md, etc.)
-      # -----------------------------------------------------------
+          
+      # Upload the folder as-is (No renaming)
+      # We name the artifact just by the index number
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: results-${{ matrix.index }}
-          path: examples/*_${{ matrix.index }}.*
+          name: ${{ matrix.index }}
+          path: examples/
           retention-days: 1
           
   commit-results:
@@ -74,26 +53,30 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         
-      # -----------------------------------------------------------
-      # MERGE: Downloads the specific renamed files from all jobs
-      # into the single 'examples/' folder.
-      # -----------------------------------------------------------
+      # -------------------------------------------------------
+      # Download all artifacts into the 'examples' folder.
+      # By NOT using 'merge-multiple', GitHub automatically 
+      # creates a folder for each index.
+      # Result: 
+      #   examples/1/strategy.png
+      #   examples/2/strategy.png
+      # -------------------------------------------------------
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: results-*
           path: examples/
-          merge-multiple: true
+          
+      - name: Display structure
+        run: ls -R examples/
           
       - name: Commit and push
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # Force add the new files
           git add examples/
           
-          # Commit only if there are changes
+          # Commit only if changes exist
           git diff --staged --quiet || git commit -m "📊 Daily analysis update - $(date +%Y-%m-%d)"
           git pull --rebase
           git push
