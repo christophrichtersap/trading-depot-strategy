@@ -15,12 +15,12 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # ==========================================
 INDEX_MAP = {
-    "1": {"Ticker": "EUNL",     "Name": "Nasdaq 100",   "Currency": "$"},
-    "2": {"Ticker": "SXR8",    "Name": "S&P 500",      "Currency": "$"},
-    "3": {"Ticker": "^GDAXI",   "Name": "DAX 40",       "Currency": "€"},
-    "4": {"Ticker": "DBX0M2","Name": "CSI 300",      "Currency": "¥"},
-    "5": {"Ticker": "A0RPWH",     "Name": "MSCI World",   "Currency": "$"},
-    "6": {"Ticker": "EUE", "Name": "EuroStoxx 50",  "Currency": "€"}
+    "1": {"Ticker": "EXXT.DE",    "Name": "Nasdaq 100",    "Currency": "$"},
+    "2": {"Ticker": "SPY",    "Name": "S&P 500",    "Currency": "$"},
+    "3": {"Ticker": "^GDAXI",    "Name": "DAX 40",    "Currency": "€"},
+    "4": {"Ticker": "XCHA.DE",    "Name": "CSI 300",    "Currency": "$"},
+    "5": {"Ticker": "A0RPWH",    "Name": "XWD.TO",    "Currency": "$"},
+    "6": {"Ticker": "EXW1.DE",    "Name": "EuroStoxx 50",    "Currency": "€"}
     
     
 }
