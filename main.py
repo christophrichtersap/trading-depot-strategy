@@ -19,7 +19,7 @@ INDEX_MAP = {
     "2": {"Ticker": "SPY",    "Name": "S&P 500",    "Currency": "$"},
     "3": {"Ticker": "^GDAXI",    "Name": "DAX 40",    "Currency": "€"},
     "4": {"Ticker": "XCHA.DE",    "Name": "CSI 300",    "Currency": "$"},
-    "5": {"Ticker": "A0RPWH",    "Name": "XWD.TO",    "Currency": "$"},
+    "5": {"Ticker": "XWD.TO",    "Name": "MSCI World",    "Currency": "$"},
     "6": {"Ticker": "EXW1.DE",    "Name": "EuroStoxx 50",    "Currency": "€"}
     
     
