@@ -1,6 +1,6 @@
 # 📈 Strategy Report: EuroStoxx 50
 
-**Date:** 2025-11-30 06:16
+**Date:** 2025-12-01 06:19
 **Index:** EXW1.DE
 **Settings:** Tax 27.500000000000004% | Spread 0.5% | Slip 0.2%
 
