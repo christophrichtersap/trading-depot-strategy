@@ -1,6 +1,6 @@
 # 📈 Strategy Report: Nasdaq 100
 
-**Date:** 2025-12-06 06:15
+**Date:** 2025-12-07 06:15
 **Index:** EXXT.DE
 **Settings:** Tax 27.500000000000004% | Spread 0.5% | Slip 0.2%
 
