@@ -1,6 +1,6 @@
 # 📈 Strategy Report: MSCI World
 
-**Date:** 2025-12-07 06:15
+**Date:** 2025-12-08 06:19
 **Index:** XWD.TO
 **Settings:** Tax 27.500000000000004% | Spread 0.5% | Slip 0.2%
 
