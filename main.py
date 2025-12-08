@@ -377,23 +377,58 @@ if __name__ == '__main__':
     print(f"📊 Chart saved: {img_path}")
 
     # --- G. MARKDOWN REPORT ---
-    def get_stats(arr, is_bench=False):
+    def get_stats(arr, dts, is_bench=False):
         val = arr[-1]
         # Apply deferred tax if benchmark
         if is_bench and val > INITIAL_CAPITAL: val -= (val - INITIAL_CAPITAL) * TAX_RATE
-        
         ret = (val - INITIAL_CAPITAL) / INITIAL_CAPITAL * 100
-        years = (d_plot[-1] - d_plot[0]).days / 365.25
+        years = (dts[-1] - dts[0]).days / 365.25
         cagr = ((val/INITIAL_CAPITAL)**(1/years) - 1) * 100 if val > 0 else -100
         pk = np.maximum.accumulate(arr)
         dd = np.min(np.nan_to_num((arr-pk)/pk)) * 100
         return ret, cagr, dd, val
 
-    r3, c3, d3, v3 = get_stats(s3)
-    r2, c2, d2, v2 = get_stats(s2)
-    rh1, ch1, dh1, vh1 = get_stats(h1, True)
-    rh2, ch2, dh2, vh2 = get_stats(h2, True)
-    rh3, ch3, dh3, vh3 = get_stats(h3, True)
+    def get_period_indices(dates, years):
+        cutoff = dates[-1] - datetime.timedelta(days=int(365.25*years))
+        idx = np.searchsorted(dates, cutoff)
+        return idx
+
+    # Indices for periods
+    idx_ytd = np.searchsorted(dates, datetime.datetime(dates[-1].year, 1, 1))
+    idx_3y = get_period_indices(dates, 3)
+    idx_5y = get_period_indices(dates, 5)
+
+    # Helper to slice arrays
+    def stats_period(arr, idx, is_bench=False):
+        return get_stats(arr[idx:], dates[idx:], is_bench)
+
+    # Full period stats
+    r3, c3, d3, v3 = get_stats(s3, dates)
+    r2, c2, d2, v2 = get_stats(s2, dates)
+    rh1, ch1, dh1, vh1 = get_stats(h1, dates, True)
+    rh2, ch2, dh2, vh2 = get_stats(h2, dates, True)
+    rh3, ch3, dh3, vh3 = get_stats(h3, dates, True)
+
+    # YTD stats
+    r3_ytd, c3_ytd, _, _ = stats_period(s3, idx_ytd)
+    r2_ytd, c2_ytd, _, _ = stats_period(s2, idx_ytd)
+    rh1_ytd, ch1_ytd, _, _ = stats_period(h1, idx_ytd, True)
+    rh2_ytd, ch2_ytd, _, _ = stats_period(h2, idx_ytd, True)
+    rh3_ytd, ch3_ytd, _, _ = stats_period(h3, idx_ytd, True)
+
+    # 3-year stats
+    r3_3y, c3_3y, _, _ = stats_period(s3, idx_3y)
+    r2_3y, c2_3y, _, _ = stats_period(s2, idx_3y)
+    rh1_3y, ch1_3y, _, _ = stats_period(h1, idx_3y, True)
+    rh2_3y, ch2_3y, _, _ = stats_period(h2, idx_3y, True)
+    rh3_3y, ch3_3y, _, _ = stats_period(h3, idx_3y, True)
+
+    # 5-year stats
+    r3_5y, c3_5y, _, _ = stats_period(s3, idx_5y)
+    r2_5y, c2_5y, _, _ = stats_period(s2, idx_5y)
+    rh1_5y, ch1_5y, _, _ = stats_period(h1, idx_5y, True)
+    rh2_5y, ch2_5y, _, _ = stats_period(h2, idx_5y, True)
+    rh3_5y, ch3_5y, _, _ = stats_period(h3, idx_5y, True)
 
     p3_str = f"SMA {best_3x[0]} / Buf {best_3x[1]}% / SL {int(best_3x[3]*100)}%"
     p2_str = f"SMA {best_2x[0]} / Buf {best_2x[1]}% / SL {int(best_2x[3]*100)}%"
@@ -405,13 +440,13 @@ if __name__ == '__main__':
 **Settings:** Tax {TAX_RATE*100}% | Spread {BORROW_SPREAD*100}% | Slip {SLIPPAGE*100}%
 
 ## 1. Performance (Net of Tax)
-| Strategy | Best Parameters | Total Return | CAGR | Max Drawdown |
-| :--- | :--- | :---: | :---: | :---: |
-| Strategy 3x | `{p3_str}` | **{r3:,.0f}%** | **{c3:.2f}%** | {d3:.2f}% 
-| Strategy 2x | `{p2_str}` | {r2:,.0f}% | {c2:.2f}% | {d2:.2f}%
-| Index 1x | - | {rh1:,.0f}% | {ch1:.2f}% | {dh1:.2f}% 
-| Index 2x | - | {rh2:,.0f}% | {ch2:.2f}% | {dh2:.2f}%
-| Index 3x | - | {rh3:,.0f}% | {ch3:.2f}% | {dh3:.2f}% 
+| Strategy | Best Parameters | Total Return | CAGR | YTD Return | 3Y Return | 5Y Return | YTD CAGR | 3Y CAGR | 5Y CAGR | Max Drawdown |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Strategy 3x | `{p3_str}` | **{r3:,.0f}%** | **{c3:.2f}%** | {r3_ytd:,.0f}% | {r3_3y:,.0f}% | {r3_5y:,.0f}% | {c3_ytd:.2f}% | {c3_3y:.2f}% | {c3_5y:.2f}% | {d3:.2f}% 
+| Strategy 2x | `{p2_str}` | {r2:,.0f}% | {c2:.2f}% | {r2_ytd:,.0f}% | {r2_3y:,.0f}% | {r2_5y:,.0f}% | {c2_ytd:.2f}% | {c2_3y:.2f}% | {c2_5y:.2f}% | {d2:.2f}%
+| Index 1x | - | {rh1:,.0f}% | {ch1:.2f}% | {rh1_ytd:,.0f}% | {rh1_3y:,.0f}% | {rh1_5y:,.0f}% | {ch1_ytd:.2f}% | {ch1_3y:.2f}% | {ch1_5y:.2f}% | {dh1:.2f}% 
+| Index 2x | - | {rh2:,.0f}% | {ch2:.2f}% | {rh2_ytd:,.0f}% | {rh2_3y:,.0f}% | {rh2_5y:,.0f}% | {ch2_ytd:.2f}% | {ch2_3y:.2f}% | {ch2_5y:.2f}% | {dh2:.2f}%
+| Index 3x | - | {rh3:,.0f}% | {ch3:.2f}% | {rh3_ytd:,.0f}% | {rh3_3y:,.0f}% | {rh3_5y:,.0f}% | {ch3_ytd:.2f}% | {ch3_3y:.2f}% | {ch3_5y:.2f}% | {dh3:.2f}% 
 
 ## 2. Current Status ({dates[-1].date()})
 | Strategy | Phase | Profit | Days | Analysis | Action |
