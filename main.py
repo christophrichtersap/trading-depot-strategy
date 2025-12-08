@@ -15,14 +15,12 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # ==========================================
 INDEX_MAP = {
-    "1": {"Ticker": "EXXT.DE",    "Name": "Nasdaq 100",    "Currency": "$"},
-    "2": {"Ticker": "SPY",    "Name": "S&P 500",    "Currency": "$"},
-    "3": {"Ticker": "^GDAXI",    "Name": "DAX 40",    "Currency": "€"},
-    "4": {"Ticker": "XCHA.DE",    "Name": "CSI 300",    "Currency": "$"},
-    "5": {"Ticker": "XWD.TO",    "Name": "MSCI World",    "Currency": "$"},
-    "6": {"Ticker": "EXW1.DE",    "Name": "EuroStoxx 50",    "Currency": "€"}
-    
-    
+    "1": {"Ticker": "^NDX",     "Name": "Nasdaq 100",   "Currency": "$"},
+    "2": {"Ticker": "^GSPC",    "Name": "S&P 500",      "Currency": "$"},
+    "3": {"Ticker": "^GDAXI",   "Name": "DAX 40",       "Currency": "€"},
+    "4": {"Ticker": "000300.SS","Name": "CSI 300",      "Currency": "¥"},
+    "5": {"Ticker": "URTH",     "Name": "MSCI World",   "Currency": "$"},
+    "6": {"Ticker": "^STOXX50E","Name": "EuroStoxx 50", "Currency": "€"}
 }
 
 # FINANCIAL SETTINGS (GERMANY / REALISTIC)
@@ -37,10 +35,10 @@ BORROW_SPREAD = 0.005       # Extra interest cost for leverage (0.5%)
 TER_1X  = 0.0003  
 
 # OPTIMIZATION GRID
-SMA_RANGES = range(180, 230, 10)       
-BUFFER_RANGES = [1.0, 2.0, 3.0]         
+SMA_RANGES = range(120, 280, 10)       # Much wider: 120-270 days (16 values)
+BUFFER_RANGES = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]  # 14 values
 RSI_RANGES = [50]                       
-STOP_LOSS_RANGES = np.arange(0.10, 0.25, 0.02) 
+STOP_LOSS_RANGES = np.arange(0.10, 0.35, 0.01)  # 10%-34% range, finer steps (25 values) 
 
 # OUTPUT DIRECTORY
 OUTPUT_DIR = "examples"
@@ -388,47 +386,59 @@ if __name__ == '__main__':
         dd = np.min(np.nan_to_num((arr-pk)/pk)) * 100
         return ret, cagr, dd, val
 
-    def get_period_indices(dates, years):
-        cutoff = dates[-1] - datetime.timedelta(days=int(365.25*years))
-        idx = np.searchsorted(dates, cutoff)
-        return idx
+    def get_period_return(arr, dts, idx, is_bench=False):
+        """Calculate return from index position to end, using starting value at idx as baseline"""
+        if idx >= len(arr) - 1:
+            return 0.0, 0.0
+        
+        start_val = arr[idx]
+        end_val = arr[-1]
+        
+        # Apply deferred tax if benchmark
+        if is_bench and end_val > start_val:
+            end_val -= (end_val - start_val) * TAX_RATE
+        
+        ret = (end_val - start_val) / start_val * 100
+        years = (dts[-1] - dts[idx]).days / 365.25
+        if years > 0 and end_val > 0 and start_val > 0:
+            cagr = ((end_val/start_val)**(1/years) - 1) * 100
+        else:
+            cagr = 0.0
+        
+        return ret, cagr
 
-    # Indices for periods
-    idx_ytd = np.searchsorted(dates, datetime.datetime(dates[-1].year, 1, 1))
-    idx_3y = get_period_indices(dates, 3)
-    idx_5y = get_period_indices(dates, 5)
-
-    # Helper to slice arrays
-    def stats_period(arr, idx, is_bench=False):
-        return get_stats(arr[idx:], dates[idx:], is_bench)
+    # Indices for periods (use d_plot which is the truncated dates array)
+    idx_ytd = np.searchsorted(d_plot, datetime.datetime(d_plot[-1].year, 1, 1))
+    idx_3y = max(0, len(d_plot) - int(3 * 252))  # ~3 years of trading days
+    idx_5y = max(0, len(d_plot) - int(5 * 252))  # ~5 years of trading days
 
     # Full period stats
-    r3, c3, d3, v3 = get_stats(s3, dates)
-    r2, c2, d2, v2 = get_stats(s2, dates)
-    rh1, ch1, dh1, vh1 = get_stats(h1, dates, True)
-    rh2, ch2, dh2, vh2 = get_stats(h2, dates, True)
-    rh3, ch3, dh3, vh3 = get_stats(h3, dates, True)
+    r3, c3, d3, v3 = get_stats(s3, d_plot)
+    r2, c2, d2, v2 = get_stats(s2, d_plot)
+    rh1, ch1, dh1, vh1 = get_stats(h1, d_plot, True)
+    rh2, ch2, dh2, vh2 = get_stats(h2, d_plot, True)
+    rh3, ch3, dh3, vh3 = get_stats(h3, d_plot, True)
 
     # YTD stats
-    r3_ytd, c3_ytd, _, _ = stats_period(s3, idx_ytd)
-    r2_ytd, c2_ytd, _, _ = stats_period(s2, idx_ytd)
-    rh1_ytd, ch1_ytd, _, _ = stats_period(h1, idx_ytd, True)
-    rh2_ytd, ch2_ytd, _, _ = stats_period(h2, idx_ytd, True)
-    rh3_ytd, ch3_ytd, _, _ = stats_period(h3, idx_ytd, True)
+    r3_ytd, c3_ytd = get_period_return(s3, d_plot, idx_ytd)
+    r2_ytd, c2_ytd = get_period_return(s2, d_plot, idx_ytd)
+    rh1_ytd, ch1_ytd = get_period_return(h1, d_plot, idx_ytd, True)
+    rh2_ytd, ch2_ytd = get_period_return(h2, d_plot, idx_ytd, True)
+    rh3_ytd, ch3_ytd = get_period_return(h3, d_plot, idx_ytd, True)
 
     # 3-year stats
-    r3_3y, c3_3y, _, _ = stats_period(s3, idx_3y)
-    r2_3y, c2_3y, _, _ = stats_period(s2, idx_3y)
-    rh1_3y, ch1_3y, _, _ = stats_period(h1, idx_3y, True)
-    rh2_3y, ch2_3y, _, _ = stats_period(h2, idx_3y, True)
-    rh3_3y, ch3_3y, _, _ = stats_period(h3, idx_3y, True)
+    r3_3y, c3_3y = get_period_return(s3, d_plot, idx_3y)
+    r2_3y, c2_3y = get_period_return(s2, d_plot, idx_3y)
+    rh1_3y, ch1_3y = get_period_return(h1, d_plot, idx_3y, True)
+    rh2_3y, ch2_3y = get_period_return(h2, d_plot, idx_3y, True)
+    rh3_3y, ch3_3y = get_period_return(h3, d_plot, idx_3y, True)
 
     # 5-year stats
-    r3_5y, c3_5y, _, _ = stats_period(s3, idx_5y)
-    r2_5y, c2_5y, _, _ = stats_period(s2, idx_5y)
-    rh1_5y, ch1_5y, _, _ = stats_period(h1, idx_5y, True)
-    rh2_5y, ch2_5y, _, _ = stats_period(h2, idx_5y, True)
-    rh3_5y, ch3_5y, _, _ = stats_period(h3, idx_5y, True)
+    r3_5y, c3_5y = get_period_return(s3, d_plot, idx_5y)
+    r2_5y, c2_5y = get_period_return(s2, d_plot, idx_5y)
+    rh1_5y, ch1_5y = get_period_return(h1, d_plot, idx_5y, True)
+    rh2_5y, ch2_5y = get_period_return(h2, d_plot, idx_5y, True)
+    rh3_5y, ch3_5y = get_period_return(h3, d_plot, idx_5y, True)
 
     p3_str = f"SMA {best_3x[0]} / Buf {best_3x[1]}% / SL {int(best_3x[3]*100)}%"
     p2_str = f"SMA {best_2x[0]} / Buf {best_2x[1]}% / SL {int(best_2x[3]*100)}%"
