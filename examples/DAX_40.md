@@ -1,6 +1,6 @@
 # 📈 Strategy Report: DAX 40
 
-**Date:** 2026-01-03 06:19
+**Date:** 2026-01-04 06:19
 **Index:** ^GDAXI
 **Settings:** Tax 27.500000000000004% | Spread 0.5% | Slip 0.2%
 
