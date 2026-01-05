@@ -1,6 +1,6 @@
 # 📈 Strategy Report: EuroStoxx 50
 
-**Date:** 2026-01-04 06:20
+**Date:** 2026-01-05 06:26
 **Index:** ^STOXX50E
 **Settings:** Tax 27.500000000000004% | Spread 0.5% | Slip 0.2%
 
