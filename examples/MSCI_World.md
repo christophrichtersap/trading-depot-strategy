@@ -1,6 +1,6 @@
 # 📈 Strategy Report: MSCI World
 
-**Date:** 2026-01-10 06:18
+**Date:** 2026-01-11 06:19
 **Index:** URTH
 **Settings:** Tax 27.500000000000004% | Spread 0.5% | Slip 0.2%
 
