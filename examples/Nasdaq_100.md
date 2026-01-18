@@ -1,6 +1,6 @@
 # 📈 Strategy Report: Nasdaq 100
 
-**Date:** 2026-01-17 06:17
+**Date:** 2026-01-18 06:17
 **Index:** ^NDX
 **Settings:** Tax 27.500000000000004% | Spread 0.5% | Slip 0.2%
 
