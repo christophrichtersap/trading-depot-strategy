@@ -1,23 +1,23 @@
 # 📈 Strategy Report: MSCI World
 
-**Date:** 2026-01-30 06:36
+**Date:** 2026-01-31 06:27
 **Index:** URTH
 **Settings:** Tax 27.500000000000004% | Spread 0.5% | Slip 0.2%
 
 ## 1. Performance (Net of Tax)
 | Strategy | Best Parameters | Total Return | CAGR | YTD Return | 3Y Return | 5Y Return | YTD CAGR | 3Y CAGR | 5Y CAGR | Max Drawdown |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Strategy 3x | `SMA 120 / Buf 4.0% / SL 11%` | **975%** | **18.42%** | 6% | 149% | 100% | 123.84% | 35.42% | 14.88% | -59.01% 
-| Strategy 2x | `SMA 120 / Buf 4.0% / SL 11%` | 485% | 13.40% | 4% | 96% | 70% | 74.78% | 24.95% | 11.19% | -45.43%
-| Index 1x | - | 286% | 10.08% | 2% | 53% | 57% | 25.05% | 15.11% | 9.41% | -34.01% 
-| Index 2x | - | 722% | 16.18% | 3% | 99% | 90% | 50.25% | 25.60% | 13.67% | -59.29%
-| Index 3x | - | 1,204% | 20.06% | 4% | 153% | 113% | 80.20% | 36.05% | 16.33% | -76.70% 
+| Strategy 3x | `SMA 120 / Buf 4.0% / SL 11%` | **955%** | **18.26%** | 4% | 139% | 97% | 69.91% | 33.49% | 14.55% | -59.01% 
+| Strategy 2x | `SMA 120 / Buf 4.0% / SL 11%` | 478% | 13.30% | 3% | 90% | 68% | 45.49% | 23.76% | 10.97% | -45.43%
+| Index 1x | - | 283% | 10.04% | 1% | 51% | 56% | 17.00% | 14.66% | 9.32% | -34.01% 
+| Index 2x | - | 712% | 16.08% | 2% | 94% | 88% | 31.38% | 24.57% | 13.49% | -59.29%
+| Index 3x | - | 1,180% | 19.89% | 3% | 143% | 111% | 47.17% | 34.33% | 16.04% | -76.70% 
 
-## 2. Current Status (2026-01-29)
+## 2. Current Status (2026-01-30)
 | Strategy | Phase | Profit | Days | Analysis | Action |
 | :--- | :---: | :---: | :---: | :--- | :---: |
-| Strategy 3x | LONG | +70.22% | 272 | `SAFETY: 8.60%` | **HOLD** |
-| Strategy 2x | LONG | +45.08% | 272 | `SAFETY: 8.60%` | **HOLD** |
+| Strategy 3x | LONG | +67.03% | 273 | `SAFETY: 7.96%` | **HOLD** |
+| Strategy 2x | LONG | +43.27% | 273 | `SAFETY: 7.96%` | **HOLD** |
 
 ## 3. Visualization
 ![Chart](MSCI_World.png)
